@@ -1,0 +1,113 @@
+#version: 2
+jobs:
+  build:
+    filters:
+      branches:
+        only:
+          - ${branch}
+    working_directory: ~/repo
+    docker:
+      - image: circleci/ruby:2.4.2-jessie-node
+    steps:
+        - checkout
+        - run:
+            name: Update npm
+            command: |
+              node --version
+              npm --version
+        - run:
+            name: pip Install for awscli
+            command: sudo apt-get update && sudo apt-get install wget zip unzip python2.7 python-pip -y
+        - run:
+            name: awscli
+            command: sudo pip install awscli
+        - run:
+            name: aws accesskeys
+            command: |
+              aws configure set aws_access_key_id \
+                ${AWS_ACCESS_KEY_ID}
+        - run:
+            name: Check accesskey
+            command: |
+              aws configure get aws_access_key_id
+        - run:
+            command: |
+              aws configure set aws_secret_access_key \
+                ${AWS_SECRET_ACCESS_KEY}
+        - run:
+            name: aws region
+            command: |
+              aws configure set aws_region \
+                ${REGION}
+        - run:
+            name: App folder creation
+            command: |
+              cd /home/circleci/repo/
+              pwd
+              ls 
+              npm install
+        - run:
+            name: Artifact
+            command: |
+              pwd
+              mkdir -p artifact
+              cd artifact
+              cp /home/circleci/repo/codeDeploy/*.sh .
+              ls -al
+              cp /home/circleci/repo/*.yml .
+              cp ../cloudwatch-config.json .
+              ls -al
+              pwd
+              mkdir -p webApp
+              ls -al
+              cd webApp
+              pwd 
+              cp -r /home/circleci/repo/*.js .
+              ls -al
+              cp -r /home/circleci/repo/package.json .
+              cd ..
+              pwd
+              zip -r csye6225-webApp-${CIRCLE_BUILD_NUM}.zip .
+              ls -al
+              shopt -s extglob
+              rm -r !(*.zip)
+              ls -al
+              pwd
+              cd ..
+              pwd
+              ls -al
+        - run:
+            name: Upload Artifact to S3
+            command: |
+              aws s3 cp --recursive artifact s3://${deploy_bucket}
+        - run:
+            name: Make CodeDeploy API call
+            command: |
+              deploymentId=$(aws deploy create-deployment --output text --application-name ${codedeploy_application} --region ${REGION} --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ${codedeploy_groupname} --s3-location bucket=${deploy_bucket},bundleType=zip,key=csye6225-webApp-${CIRCLE_BUILD_NUM}.zip)
+              echo -e "deployment id is $deploymentId"
+              aws deploy wait deployment-successful --deployment-id $deploymentId --region ${REGION} 
+  pr_check:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:7.10
+      - image: circleci/postgres:9.6
+    steps:     
+      - checkout
+      - run: npm install
+      - run:
+          name: Run tests
+          command: node test.js
+
+workflows:
+  version: 2
+  pr-check:
+    jobs:
+      - pr_check
+      
+  build_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+              - master

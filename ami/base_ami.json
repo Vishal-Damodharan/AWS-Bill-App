@@ -1,0 +1,98 @@
+{
+  "variables": {
+  "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+  "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+  "aws_region": "{{env `aws_region`}}",
+  "vpc_id": "${vpc_id}",
+  "vpc_region":"${vpc_region}",
+  "source_ami": "${source_ami}",
+  "instance_type": "${instance_type}",
+  "ssh_username": "${ssh_username}"
+},
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "associate_public_ip_address": true,
+      "security_group_id": "{{user `vpc_public_sg_id`}}",
+      "source_ami": "{{user `source_ami`}}",
+      "region": "{{user `vpc_region`}}",
+      "vpc_id": "{{user `vpc_id`}}",
+      "instance_type": "{{user `instance_type`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ami_name": "base-ami-{{isotime \"2006-01-02-1504\"}}",
+      "ami_groups": "all",
+      "launch_block_device_mappings": [
+        {
+          "device_name": "/dev/sda1",
+          "volume_type": "gp2",
+          "volume_size": "20",
+          "delete_on_termination": true
+        }
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "environment_vars": [
+        "region={{user `aws_region`}}"
+      ],
+      "inline": [
+        "pwd",
+        "echo $region",
+        "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash",
+        ". ~/.nvm/nvm.sh",
+        "sudo apt-get update",
+        "sudo apt-get install postgresql-client-common",
+        "sudo apt-get update",
+        "sudo apt-get install postgresql-client-common",
+        "sudo apt-get install ruby-full -y",
+        "sudo apt-get install wget -y",
+        "echo $region",
+        "ls -al",
+        "pwd",
+        "echo ami created......................................................................................... ",
+        "wget https://s3.amazonaws.com/amazoncloudwatch-agent/linux/amd64/latest/AmazonCloudWatchAgent.zip",
+        "sudo apt-get install unzip -y",
+        "unzip AmazonCloudWatchAgent.zip",
+        "ls -al",
+        "sudo ./install.sh",
+        "cd /home/ubuntu",
+        "wget \"https://aws-codedeploy-$region.s3.$region.amazonaws.com/latest/install\"",
+        "wget \"https://aws-codedeploy-$region.s3.$region.amazonaws.com/latest/install\"",
+        "chmod +x ./install",
+        "sudo ./install auto",  
+        "nvm install node",
+        "node --version",
+        "npm --version",
+        "npm install express",
+        "npm install nodemon",
+        "npm install morgan",
+        "npm install multer",
+        "npm install multer-s3",
+        "npm install pg",
+        "npm install email-validator",
+        "npm install aws-sdk",
+        "npm install basic-auth",
+        "npm install basic-auth-connect",
+        "npm install bcrypt",
+        "npm install dotenv",
+        "npm install express-basic-auth",
+        "npm install password-validator",
+        "npm install tsscmp",
+        "sudo mkdir -p /var/postgres-certs/",
+        "cd /var/postgres-certs/",
+        "sudo curl -O https://s3.amazonaws.com/rds-downloads/rds-ca-2019-root.pem"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "manifest.json",
+      "strip_path": true
+    }
+  ]
+}

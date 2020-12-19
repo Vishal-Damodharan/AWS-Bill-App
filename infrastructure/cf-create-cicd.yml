@@ -1,0 +1,107 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Cloud Formation to build CICD codedeploy requirements
+Parameters:
+  awsaccount:
+    Type: String
+    Description: Encryption of the bucket
+  SSEAlgorithm:
+    Type: String
+    Description: Encryption of the bucket
+  LifecycleID:
+    Type: String
+    Description: Lifecycle ID of the bucket
+  LifecycleStatus:
+    Type: String
+    Description: Lifecycle status of the bucket
+  LifecyclePrefix:
+    Type: String
+    Description: Lifecycle prefix of the bucket
+  LifecycleExpirationInDays:
+    Type: Number
+    Description: Lifecycle expiration of the bucket
+  LifecycleTransitionindays:
+    Type: Number
+    Description: Lifecycle transition of the bucket
+  LifecycleStorageClass:
+    Type: String
+    Description: Lifecycle Storage of the bucket
+  ARNBucketName:
+    Type: String
+    Description: ARN of the bucket
+  ARNBucketNameObj:
+    Type: String
+    Description: OBJ of the bucket
+Resources:
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: csye6225-webapp
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    DependsOn:
+    - CodeDeployApplication
+    Properties:
+      DeploymentGroupName: csye6225-webapp-deployment
+      ApplicationName: csye6225-webapp
+      ServiceRoleArn:
+        Fn::Join:
+        - ''
+        - - 'arn:aws:iam::'
+          - Ref: awsaccount
+          - ":role/"
+          - CodeDeployServiceRole
+      AutoRollbackConfiguration:
+        Enabled: 'true'
+        Events:
+        - DEPLOYMENT_FAILURE
+      DeploymentStyle:
+        DeploymentOption: WITHOUT_TRAFFIC_CONTROL
+        DeploymentType: IN_PLACE
+      DeploymentConfigName: CodeDeployDefault.AllAtOnce
+      Ec2TagFilters:
+      - Type: KEY_AND_VALUE
+        Key: Name
+        Value:
+          Fn::Join:
+          - ''
+          - - Ref: AWS::StackName
+            - Ec2Instance
+  CodeDeployS3:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: codedeploy.vishaldamodharan30797.com
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm:
+              Ref: SSEAlgorithm
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+        - Id:
+            Ref: LifecycleID
+          Prefix:
+            Ref: LifecyclePrefix
+          Status:
+            Ref: LifecycleStatus
+          ExpirationInDays:
+            Ref: LifecycleExpirationInDays
+          Transitions:
+          - TransitionInDays:
+              Ref: LifecycleTransitionindays
+            StorageClass:
+              Ref: LifecycleStorageClass
+Outputs:
+  ApplicationBucket:
+    Description: S3 bucket created from cloudformation stack-csye6225
+    Value:
+      Ref: S3Bucket
+  DeployBucket:
+    Description: S3 bucket created from cloudformation stack-csye6225
+    Value:
+      Ref: CodeDeployS3

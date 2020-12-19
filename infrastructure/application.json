@@ -1,0 +1,463 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Cloud Formation to build network infrastructure which includes VPC,Subnets,IGW and public Route",
+    "Parameters": {
+        "myVPC":{
+            "Type": "String",
+            "Description": "VPC IP Range"
+        },
+        "PublicSubnet1":{
+            "Type": "String",
+            "Description": "VPC IP Range"
+        },
+        "PublicSubnet2":{
+            "Type": "String",
+            "Description": "VPC IP Range"
+        },
+        "PublicSubnet3":{
+            "Type": "String",
+            "Description": "Public "
+        },
+        "S3Bucket": {
+            "Type": "String",
+            "Description": " Availability Zone for subnet"
+        },
+        "ec2instanceprofile": {
+            "Type": "String",
+            "Description": " Availability Zone for subnet"
+        },
+        "DeviceName": {
+            "Type": "String",
+            "Description": "Encryption of the bucket"
+        },
+        "VolumeType": {
+            "Type": "String",
+            "Description": "Volume of the EC2"
+        },
+        "DeleteOnTermination": {
+            "Type": "String",
+            "Description": "Termination of the EC2"
+        },
+        "VolumeSize": {
+            "Type": "Number",
+            "Description": "Volume size of the EC2"
+        },
+        "InstanceType": {
+            "Type": "String",
+            "Description": "Instance type of the EC2"
+        },
+        "KeyName": {
+            "Type": "String",
+            "Description": "Key pair of the EC2"
+        },
+        "Protocol": {
+            "Type": "String",
+            "Description": "Protocol of the Security Group"
+        },
+        "portdb": {
+            "Type": "String",
+            "Description": "port Number of the Database Security Group"
+        },
+        "portapp1": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "portapp2": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "portapp3": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "portapp4": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "CidrIp": {
+            "Type": "String",
+            "Description": "CIDR IP of the Security Group"
+        },
+        "ImageId": {
+            "Type": "String",
+            "Description": "AMI ID for the Image"
+        },
+        "DBInstanceID": {
+            "Description": "My database instance",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "63",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Must begin with a letter and must not end with a hyphen or contain two consecutive hyphens."
+        },
+        "DBName": {
+            "Description": "My database",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "64",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Must begin with a letter and contain only alphanumeric characters."
+        },
+        "DBInstanceClass": {
+            "Description": "DB instance class",
+            "Type": "String",
+            "ConstraintDescription": "Must select a valid DB instance type."
+        },
+        "DBAllocatedStorage": {
+            "Description": "The size of the database (GiB)",
+            "Type": "Number",
+            "MinValue": "5",
+            "MaxValue": "1024",
+            "ConstraintDescription": "must be between 20 and 65536 GiB."
+        },
+        "DBUsername": {
+            "NoEcho": "true",
+            "Description": "Username for MySQL database access",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+        },
+        "DBPassword": {
+            "NoEcho": "true",
+            "Description": "Password MySQL database access",
+            "Type": "String",
+            "MinLength": "8",
+            "MaxLength": "41",
+            "AllowedPattern": "[a-zA-Z0-9]*",
+            "ConstraintDescription": "must contain only alphanumeric characters."
+        },
+        "userdata": {
+            "Type": "String",
+            "Description": "Userdata for EC2 Security Group"
+        },
+        "awsaccount": {
+            "Type": "String",
+            "Description": "Account id"
+        },
+        "awsregion": {
+            "Type": "String",
+            "Description": "Region for account"
+        },
+        "TagKey": {
+            "Description": "The EC2 tag key that identifies this as a target for deployments.",
+            "Type": "String",
+            "Default": "Name",
+            "AllowedPattern": "[\\x20-\\x7E]*",
+            "ConstraintDescription": "Can contain only ASCII characters."
+          },
+          "TagValue": {
+            "Description": "The EC2 tag value that identifies this as a target for deployments.",
+            "Type": "String",
+            "Default": "CodeDeployDemo",
+            "AllowedPattern": "[\\x20-\\x7E]*",
+            "ConstraintDescription": "Can contain only ASCII characters."
+          }
+    },
+    "Resources": {
+        "Securitygroup1": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for Port 80",
+                "GroupName": "Application",
+                "VpcId": {
+                    "Ref": "myVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp1"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp1"
+                        },
+                        "CidrIp": {
+                            "Ref": "CidrIp"
+                        }
+                    },
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp2"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp2"
+                        },
+                        "CidrIp": {
+                            "Ref": "CidrIp"
+                        }
+                    },
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp3"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp3"
+                        },
+                        "CidrIp": {
+                            "Ref": "CidrIp"
+                        }
+                    },
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp4"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp4"
+                        },
+                        "CidrIp": {
+                            "Ref": "CidrIp"
+                        }
+                    }
+                ]
+            }
+        },
+        "Securitygroup2": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for Port 5432",
+                "GroupName": "Database",
+                "VpcId": {
+                    "Ref": "myVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portdb"
+                        },
+                        "ToPort": {
+                            "Ref": "portdb"
+                        },
+                        "SourceSecurityGroupId": {
+                            "Ref": "Securitygroup1"
+                        }
+                    }
+                ]
+            }
+        },
+        "DBSubnetGroup": {
+            "Type": "AWS::RDS::DBSubnetGroup",
+            "Properties": {
+                "DBSubnetGroupDescription": "The subnet available in VPC",
+                "DBSubnetGroupName": "VPC-Stack-Subnet",
+                "SubnetIds": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    },
+                    {
+                        "Ref": "PublicSubnet3"
+                    }
+                ]
+            }
+        },
+
+        "RDSInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "DependsOn": [
+                "DBSubnetGroup"
+            ],
+            "Properties": {
+                "DBInstanceIdentifier": {
+                    "Ref": "DBInstanceID"
+                },
+                "DBName": {
+                    "Ref": "DBName"
+                },
+                "DBInstanceClass": {
+                    "Ref": "DBInstanceClass"
+                },
+                "AllocatedStorage": {
+                    "Ref": "DBAllocatedStorage"
+                },
+                "MultiAZ": "true",
+                "Engine": "postgres",
+                "EngineVersion": "10",
+                "MasterUsername": {
+                    "Ref": "DBUsername"
+                },
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                },
+                "DBSubnetGroupName": "VPC-Stack-Subnet",
+                "VPCSecurityGroups": [
+                    {
+                        "Ref": "Securitygroup2"
+                    }
+                ]
+            }
+        },
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "Securitygroup1"
+                    },
+                    {
+                        "Ref": "Securitygroup2"
+                    }
+                ],
+                "SubnetId": {
+                    "Ref": "PublicSubnet2"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": {
+                            "Ref": "DeviceName"
+                        },
+                        "Ebs": {
+                            "VolumeType": {
+                                "Ref": "VolumeType"
+                            },
+                            "DeleteOnTermination": {
+                                "Ref": "DeleteOnTermination"
+                            },
+                            "VolumeSize": {
+                                "Ref": "VolumeSize"
+                            }
+                        }
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe \n",
+                                "sudo chown -R ubuntu:ubuntu home/ubuntu/ \n",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_USER=",
+                                            {
+                                                "Ref": "DBUsername"
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_NAME=",
+                                            {
+                                                "Ref": "DBName"
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                }, 
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_PASSWORD=",
+                                            {
+                                                "Ref": "DBPassword"
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                }, 
+                                "sudo echo port1=5000 >>  /home/ubuntu/.env \n",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_HOST=",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "RDSInstance",
+                                                    "Endpoint.Address"
+                                                ]
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo S3_BUCKET_APP=",
+                                            {
+                                                "Ref": "S3Bucket"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                }
+                            ]
+                        ]
+                    }
+                },
+                "IamInstanceProfile": {
+                    "Ref": "ec2instanceprofile"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "stack-csye6225-cicd",
+                                    "Ec2Instance"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "SecurtiyGroup": {
+            "Description": "Security Group for Application and database",
+            "Value": {
+                "Ref": "Securitygroup1"
+            }
+        },
+        "RDSInstance": {
+            "Description": "RDS Instance created from cloudformation stack-csye6225",
+            "Value": {
+                "Ref": "RDSInstance"
+            }
+        },
+        "EC2Instance": {
+            "Description": "EC2 Instance created from cloudformation stack-csye6225",
+            "Value": {
+                "Ref": "EC2Instance"
+            }
+        }
+    }
+}

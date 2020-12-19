@@ -1,0 +1,26 @@
+# ignore environment file
+.env
+
+
+.class
+.jar
+.war
+.json
+.txt
+*.pem
+build
+
+node_modules/
+
+package-lock.json
+
+Attachment/
+
+important_linux_command.txt
+
+app.log
+error.log
+user.json
+
+*.csr
+*.key

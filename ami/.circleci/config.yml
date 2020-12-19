@@ -1,0 +1,48 @@
+version: 2.0
+jobs:
+  build:
+    filters:
+      branches:
+        only:
+          - ${branch}
+    docker:
+      - image: circleci/ruby:2.4.2-jessie-node
+    steps:
+      - checkout
+      - run:
+          name: "Update Node.js and npm"
+          command: |
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+            . ~/.nvm/nvm.sh
+      - run:
+          name: Check current version of node
+          command: node --version
+      - run:
+          name: Install package
+          command: sudo apt-get update && sudo apt-get install wget zip unzip python2.7 python-pip -y
+      - run:
+          name: Install awscli
+          command: |
+            sudo pip install awscli      
+      - run:
+          name: Install webapp dependencies
+          command: |
+            ls
+            pwd
+            npm install
+            
+      - run:
+          name: Install packer
+          command: |
+            wget https://releases.hashicorp.com/packer/1.5.4/packer_1.5.4_linux_amd64.zip
+            unzip packer_1.5.4_linux_amd64.zip
+            sudo mv packer /usr/local/bin
+            packer --version
+      - run:
+          name: packer build run
+          command: |
+            echo ${vpc_id}
+            echo ${aws_region}
+            echo ${source_ami}
+            packer validate -var "vpc_id=${vpc_id}" -var "vpc_region=${aws_region}" -var "source_ami=${source_ami}" -var 'instance_type=t2.micro' -var 'ssh_username=ubuntu'  base_ami.json            
+            packer build -var "vpc_id=${vpc_id}" -var "vpc_region=${aws_region}" -var "source_ami=${source_ami}" -var 'instance_type=t2.micro' -var 'ssh_username=ubuntu'  base_ami.json            

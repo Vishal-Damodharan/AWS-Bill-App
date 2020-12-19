@@ -1,0 +1,22 @@
+{
+  "name": "serverless",
+  "version": "1.0.0",
+  "description": "Node js code for Lambda function",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vishal-Damodharan/serverless.git"
+  },
+  "author": "Vishal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vishal-Damodharan/serverless/issues"
+  },
+  "homepage": "https://github.com/Vishal-Damodharan/serverless#readme",
+  "dependencies": {
+    "aws-sdk": "^2.648.0"
+  }
+}

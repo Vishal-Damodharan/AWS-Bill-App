@@ -1,0 +1,958 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Cloud Formation to build and deploy an application in a auto scaling Instances",
+    "Parameters": {
+        "myVPC": {
+            "Type": "String",
+            "Description": "VPC IP Range"
+        },
+        "PublicSubnet1": {
+            "Type": "String",
+            "Description": "Subnet Range"
+        },
+        "PublicSubnet2": {
+            "Type": "String",
+            "Description": "Subnet Range"
+        },
+        "PublicSubnet3": {
+            "Type": "String",
+            "Description": "Public Subnet"
+        },
+        "S3Bucket": {
+            "Type": "String",
+            "Description": " Availability Zone for subnet"
+        },
+        "ec2instanceprofile": {
+            "Type": "String",
+            "Description": " Availability Zone for subnet"
+        },
+        "DeviceName": {
+            "Type": "String",
+            "Description": "Encryption of the bucket"
+        },
+        "VolumeType": {
+            "Type": "String",
+            "Description": "Volume of the EC2"
+        },
+        "DeleteOnTermination": {
+            "Type": "String",
+            "Description": "Termination of the EC2"
+        },
+        "VolumeSize": {
+            "Type": "Number",
+            "Description": "Volume size of the EC2"
+        },
+        "InstanceType": {
+            "Type": "String",
+            "Description": "Instance type of the EC2"
+        },
+        "KeyName": {
+            "Type": "String",
+            "Description": "Key pair of the EC2"
+        },
+        "Protocol": {
+            "Type": "String",
+            "Description": "Protocol of the Security Group"
+        },
+        "portdb": {
+            "Type": "String",
+            "Description": "port Number of the Database Security Group"
+        },
+        "portapp1": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "portapp2": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "portapp3": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "portapp4": {
+            "Type": "String",
+            "Description": "port Number Encryption of the Application Security Group"
+        },
+        "CidrIp": {
+            "Type": "String",
+            "Description": "CIDR IP of the Security Group"
+        },
+        "ImageId": {
+            "Type": "String",
+            "Description": "AMI ID for the Image"
+        },
+        "DBInstanceID": {
+            "Description": "My database instance",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "63",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Must begin with a letter and must not end with a hyphen or contain two consecutive hyphens."
+        },
+        "DBName": {
+            "Description": "My database",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "64",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Must begin with a letter and contain only alphanumeric characters."
+        },
+        "DBInstanceClass": {
+            "Description": "DB instance class",
+            "Type": "String",
+            "ConstraintDescription": "Must select a valid DB instance type."
+        },
+        "DBAllocatedStorage": {
+            "Description": "The size of the database (GiB)",
+            "Type": "Number",
+            "MinValue": "5",
+            "MaxValue": "1024",
+            "ConstraintDescription": "must be between 20 and 65536 GiB."
+        },
+        "DBUsername": {
+            "NoEcho": "true",
+            "Description": "Username for MySQL database access",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+        },
+        "DBPassword": {
+            "NoEcho": "true",
+            "Description": "Password MySQL database access",
+            "Type": "String",
+            "MinLength": "8",
+            "MaxLength": "41",
+            "AllowedPattern": "[a-zA-Z0-9]*",
+            "ConstraintDescription": "must contain only alphanumeric characters."
+        },
+        "userdata": {
+            "Type": "String",
+            "Description": "Userdata for EC2 Security Group"
+        },
+        "awsaccount": {
+            "Type": "String",
+            "Description": "Account id"
+        },
+        "awsregion": {
+            "Type": "String",
+            "Description": "Region for account"
+        },
+        "TagKey": {
+            "Description": "The EC2 tag key that identifies this as a target for deployments.",
+            "Type": "String",
+            "Default": "Name",
+            "AllowedPattern": "[\\x20-\\x7E]*",
+            "ConstraintDescription": "Can contain only ASCII characters."
+        },
+        "TagValue": {
+            "Description": "The EC2 tag value that identifies this as a target for deployments.",
+            "Type": "String",
+            "Default": "CodeDeployDemo",
+            "AllowedPattern": "[\\x20-\\x7E]*",
+            "ConstraintDescription": "Can contain only ASCII characters."
+        },
+        "SSEAlgorithm": {
+            "Type": "String",
+            "Description": "Encryption of the bucket"
+        },
+        "LifecycleID": {
+            "Type": "String",
+            "Description": "Lifecycle ID of the bucket"
+        },
+        "LifecycleStatus": {
+            "Type": "String",
+            "Description": "Lifecycle status of the bucket"
+        },
+        "LifecyclePrefix": {
+            "Type": "String",
+            "Description": "Lifecycle prefix of the bucket"
+        },
+        "LifecycleExpirationInDays": {
+            "Type": "Number",
+            "Description": "Lifecycle expiration of the bucket"
+        },
+        "LifecycleTransitionindays": {
+            "Type": "Number",
+            "Description": "Lifecycle transition of the bucket"
+        },
+        "LifecycleStorageClass": {
+            "Type": "String",
+            "Description": "Lifecycle Storage of the bucket"
+        },
+        "ARNBucketName": {
+            "Type": "String",
+            "Description": "ARN of the bucket"
+        },
+        "ARNBucketNameObj": {
+            "Type": "String",
+            "Description": "OBJ of the bucket"
+        },
+        "CertificateARN": {
+            "Type": "String",
+            "Description": "ARN for the certificate"
+        },
+        "DomainName":{
+            "Type": "String",
+            "Description": "Domain name for the certificate"
+        },
+        "SqsQueueUrl": {
+            "Type": "String",
+            "Description": "Domain name for the certificate"
+        },
+        "SNSTopicArn": {
+            "Type": "String",
+            "Description": "Domain name for the certificate"
+        },
+        "awsaccesskeyid":{
+            "Type": "String",
+            "Description": "Domain name for the certificate"
+        },
+        "awssecretaccesskey":{
+            "Type": "String",
+            "Description": "Domain name for the certificate"
+        }
+        
+    },
+    "Resources": {
+        "LaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "AssociatePublicIpAddress": true,
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": {
+                            "Ref": "DeviceName"
+                        },
+                        "Ebs": {
+                            "VolumeType": {
+                                "Ref": "VolumeType"
+                            },
+                            "DeleteOnTermination": {
+                                "Ref": "DeleteOnTermination"
+                            },
+                            "VolumeSize": {
+                                "Ref": "VolumeSize"
+                            }
+                        }
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe \n",
+                                "sudo chown -R ubuntu:ubuntu home/ubuntu/ \n",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_USER=",
+                                            {
+                                                "Ref": "DBUsername"
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_NAME=",
+                                            {
+                                                "Ref": "DBName"
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_PASSWORD=",
+                                            {
+                                                "Ref": "DBPassword"
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                "sudo echo port1=5000 >>  /home/ubuntu/.env \n",
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo DB_HOST=",
+                                            {
+                                                "Fn::GetAtt": [
+                                                    "RDSInstance",
+                                                    "Endpoint.Address"
+                                                ]
+                                            },
+                                            " >> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo sqs_queue_url=",
+                                            {
+                                                "Ref": "SqsQueueUrl"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo sns_topic_arn=",
+                                            {
+                                                "Ref": "SNSTopicArn"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo domain_name=",
+                                            {
+                                                "Ref": "DomainName"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo aws_access_key_id=",
+                                            {
+                                                "Ref": "awsaccesskeyid"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo aws_secret_access_key=",
+                                            {
+                                                "Ref": "awssecretaccesskey"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo aws_region=",
+                                            {
+                                                "Ref": "awsregion"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo S3_BUCKET_APP=",
+                                            {
+                                                "Ref": "S3Bucket"
+                                            },
+                                            ">> /home/ubuntu/.env \n"
+                                        ]
+                                    ]
+                                }
+                            ]
+                        ]
+                    }
+                },
+                "IamInstanceProfile": {
+                    "Ref": "ec2instanceprofile"
+                },
+                "LaunchConfigurationName": "asg_launch_config",
+                "SecurityGroups": [
+                    {
+                        "Ref": "Securitygroup1"
+                    },
+                    {
+                        "Ref": "Securitygroup2"
+                    }
+                ]
+            }
+        },
+        "AutoscalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "Cooldown": 60,
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfiguration"
+                },
+                "MinSize": 2,
+                "MaxSize": 5,
+                "DesiredCapacity": 2,
+                "TargetGroupARNs":[
+                    {
+                        "Ref": "TargetGroup"
+                    }
+                ],
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    },
+                    {
+                        "Ref": "PublicSubnet3"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": true,
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "Ec2Instance"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ScaleUpPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "AutoscalingGroup"
+                },
+                "Cooldown": "60",
+                "ScalingAdjustment": "1"
+            }
+        },
+        "ScaleDownPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "AutoscalingGroup"
+                },
+                "Cooldown": "60",
+                "ScalingAdjustment": "-1"
+            }
+        },
+        "CPUAlarmHigh": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-up if CPU > 5% for 1 minutes",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "60",
+                "EvaluationPeriods": "1",
+                "Threshold": "5",
+                "AlarmActions": [
+                    {
+                        "Ref": "ScaleUpPolicy"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "AutoscalingGroup"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "GreaterThanThreshold"
+            }
+        },
+        "CPUAlarmLow": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-down if CPU < 3% for 5 minutes",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "60",
+                "EvaluationPeriods": "1",
+                "Threshold": "3",
+                "AlarmActions": [
+                    {
+                        "Ref": "ScaleDownPolicy"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "AutoscalingGroup"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "LessThanThreshold"
+            }
+        },
+        "LoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "csye6225-LoadBalancer",
+                "Subnets": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    },
+                    {
+                        "Ref": "PublicSubnet3"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "SecurityGroup3"
+                    }
+                ],
+                "IpAddressType": "ipv4",
+                "Tags": [
+                    {
+                        "Key": "Loadbalancer",
+                        "Value": "CSYE6225"
+                    }
+                ]
+            }
+        },
+        "Certificate": {
+            "Type": "AWS::ElasticLoadBalancingV2::ListenerCertificate",
+            "Properties": {
+                "Certificates": [
+                    {
+                        "CertificateArn": {
+                            "Ref": "CertificateARN"
+                        }
+                    }
+                ],
+                "ListenerArn": {
+                    "Ref": "Listener"
+                }
+            }
+        },
+
+        "Listener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "Certificates": [
+                    {
+                        "CertificateArn": {
+                            "Ref": "CertificateARN"
+                        }
+                    }
+                ],
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "TargetGroup"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "LoadBalancer"
+                },
+                "Port": 443,
+                "Protocol": "HTTPS"
+            }
+        },
+        "TargetGroup": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "Name": "WTargetGroup",
+                "HealthCheckIntervalSeconds": 10,
+                "HealthCheckTimeoutSeconds": 5,
+                "HealthyThresholdCount": 2,
+                "UnhealthyThresholdCount": 2,
+                "HealthCheckPath": "/health",
+                "Protocol": "HTTP",
+                "Port": "5000",
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "20"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "myVPC"
+                }
+            }
+        },
+        "DNSRecord": {
+            "Type": "AWS::Route53::RecordSetGroup",
+            "Properties": {
+                "HostedZoneName": {
+                    "Ref": "DomainName"
+                },
+                "RecordSets": [
+                    {
+                        "Name": {
+                            "Ref": "DomainName"
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "LoadBalancer",
+                                    "DNSName"
+                                ]
+                            },
+                            "HostedZoneId": {
+                                "Fn::GetAtt": [
+                                    "LoadBalancer",
+                                    "CanonicalHostedZoneID"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "Securitygroup1": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for Port 80",
+                "GroupName": "Application",
+                "VpcId": {
+                    "Ref": "myVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp1"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp1"
+                        },
+                        "CidrIp": {
+                            "Ref": "CidrIp"
+                        }
+                    },
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp4"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp4"
+                        },
+                        "SourceSecurityGroupId": {
+                            "Ref": "SecurityGroup3"
+                        }
+                    }
+                ]
+            }
+        },
+        "Securitygroup2": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Security Group for Port 5432",
+                "GroupName": "Database",
+                "VpcId": {
+                    "Ref": "myVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portdb"
+                        },
+                        "ToPort": {
+                            "Ref": "portdb"
+                        },
+                        "SourceSecurityGroupId": {
+                            "Ref": "Securitygroup1"
+                        }
+                    }
+                ]
+            }
+        },
+        "SecurityGroup3": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "LoadBalancer",
+                "GroupDescription": "Enable HTTP via port 5000",
+                "VpcId": {
+                    "Ref": "myVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": {
+                            "Ref": "Protocol"
+                        },
+                        "FromPort": {
+                            "Ref": "portapp3"
+                        },
+                        "ToPort": {
+                            "Ref": "portapp3"
+                        },
+                        "CidrIp": {
+                            "Ref": "CidrIp"
+                        }
+                    }
+                ]
+            }
+        },
+        "DBSubnetGroup": {
+            "Type": "AWS::RDS::DBSubnetGroup",
+            "Properties": {
+                "DBSubnetGroupDescription": "The subnet available in VPC",
+                "DBSubnetGroupName": "VPC-Stack-Subnet",
+                "SubnetIds": [
+                    {
+                        "Ref": "PublicSubnet1"
+                    },
+                    {
+                        "Ref": "PublicSubnet2"
+                    },
+                    {
+                        "Ref": "PublicSubnet3"
+                    }
+                ]
+            }
+        },
+        "RDSInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "DependsOn": [
+                "DBSubnetGroup"
+            ],
+            "Properties": {
+                "DBInstanceIdentifier": {
+                    "Ref": "DBInstanceID"
+                },
+                "DBName": {
+                    "Ref": "DBName"
+                },
+                "DBInstanceClass": {
+                    "Ref": "DBInstanceClass"
+                },
+                "AllocatedStorage": {
+                    "Ref": "DBAllocatedStorage"
+                },
+                "StorageEncrypted" : true,
+                "MultiAZ": "true",
+                "Engine": "postgres",
+                "EngineVersion": "10",
+                "MasterUsername": {
+                    "Ref": "DBUsername"
+                },
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                },
+                "DBSubnetGroupName": "VPC-Stack-Subnet",
+                "VPCSecurityGroups": [
+                    {
+                        "Ref": "Securitygroup2"
+                    }
+                ]
+            }
+        },
+        "CodeDeployApplication": {
+            "Type": "AWS::CodeDeploy::Application",
+            "Properties": {
+                "ApplicationName": "csye6225-webapp"
+            }
+        },
+        "CodeDeployDeploymentGroup": {
+            "Type": "AWS::CodeDeploy::DeploymentGroup",
+            "DependsOn": [
+                "CodeDeployApplication"
+            ],
+            "Properties": {
+                "DeploymentGroupName": "csye6225-webapp-deployment",
+                "ApplicationName": "csye6225-webapp",
+                "ServiceRoleArn": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "arn:aws:iam::",
+                            {
+                                "Ref": "awsaccount"
+                            },
+                            ":role/",
+                            "CodeDeployServiceRole"
+                        ]
+                    ]
+                },
+                "AutoRollbackConfiguration": {
+                    "Enabled": "true",
+                    "Events": [
+                        "DEPLOYMENT_FAILURE"
+                    ]
+                },
+                "DeploymentStyle": {
+                    "DeploymentOption": "WITH_TRAFFIC_CONTROL",
+                    "DeploymentType": "IN_PLACE"
+                },
+                "DeploymentConfigName": "CodeDeployDefault.AllAtOnce",
+                "AutoScalingGroups": [
+                    {
+                        "Ref": "AutoscalingGroup"
+                    }
+                ],
+                "LoadBalancerInfo": {
+                    "TargetGroupInfoList": [
+                        {
+                            "Name":  "WTargetGroup"
+                        }
+                    ]
+                },
+                "Ec2TagFilters": [
+                    {
+                        "Type": "KEY_AND_VALUE",
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    "Ec2Instance"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "CodeDeployS3": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "codedeploy.vishaldamodharan30797.com",
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "ServerSideEncryptionByDefault": {
+                                "SSEAlgorithm": {
+                                    "Ref": "SSEAlgorithm"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "PublicAccessBlockConfiguration": {
+                    "BlockPublicAcls": true,
+                    "BlockPublicPolicy": true,
+                    "IgnorePublicAcls": true,
+                    "RestrictPublicBuckets": true
+                },
+                "LifecycleConfiguration": {
+                    "Rules": [
+                        {
+                            "Id": {
+                                "Ref": "LifecycleID"
+                            },
+                            "Prefix": {
+                                "Ref": "LifecyclePrefix"
+                            },
+                            "Status": {
+                                "Ref": "LifecycleStatus"
+                            },
+                            "ExpirationInDays": {
+                                "Ref": "LifecycleExpirationInDays"
+                            },
+                            "Transitions": [
+                                {
+                                    "TransitionInDays": {
+                                        "Ref": "LifecycleTransitionindays"
+                                    },
+                                    "StorageClass": {
+                                        "Ref": "LifecycleStorageClass"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "SecurtiyGroup": {
+            "Description": "Security Group for Application",
+            "Value": {
+                "Ref": "Securitygroup1"
+            }
+        },
+        "DatabaseSecurtiyGroup": {
+            "Description": "Security Group for Database",
+            "Value": {
+                "Ref": "Securitygroup2"
+            }
+        },
+        "LoadBalancerSecurtiyGroup": {
+            "Description": "Security Group for Loadbalancer",
+            "Value": {
+                "Ref": "SecurityGroup3"
+            }
+        },
+        "RDSInstance": {
+            "Description": "RDS Instance created from cloudformation stack-csye6225",
+            "Value": {
+                "Ref": "RDSInstance"
+            }
+        },
+        "AutoScalingGroup": {
+            "Description": "Auto-scaling Group to run EC2 Instance created from cloudformation stack-csye6225",
+            "Value": {
+                "Ref": "AutoscalingGroup"
+            }
+        },
+        "CodeDeployApplication": {
+            "Description": "Codedeploy Application",
+            "Value": {
+                "Ref": "CodeDeployApplication"
+            }
+        }
+    }
+}

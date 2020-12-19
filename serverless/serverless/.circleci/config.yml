@@ -1,0 +1,78 @@
+#version: 2
+jobs:
+  build:
+    filters:
+      branches:
+        only:
+          - ${branch}
+    working_directory: ~/repo
+    docker:
+      - image: circleci/ruby:2.4.2-jessie-node
+    steps:
+        - checkout
+        - run:
+            name: Update npm
+            command: |
+              node --version
+              npm --version
+        - run:
+            name: pip Install for awscli
+            command: sudo apt-get update && sudo apt-get install wget zip unzip python2.7 python-pip -y
+        - run:
+            name: awscli
+            command: sudo pip install awscli
+        - run:
+            name: aws accesskeys
+            command: |
+              aws configure set aws_access_key_id \
+                ${AWS_ACCESS_KEY_ID}
+        - run:
+            name: Check accesskey
+            command: |
+              aws configure get aws_access_key_id
+        - run:
+            command: |
+              aws configure set aws_secret_access_key \
+                ${AWS_SECRET_ACCESS_KEY}
+        - run:
+            name: aws region
+            command: |
+              aws configure set aws_region \
+                ${REGION}
+        - run:
+            name: App folder creation
+            command: |
+              cd /home/circleci/repo/
+              pwd
+              ls 
+              npm install
+        - run:
+            name: Artifact
+            command: |
+              pwd
+              mkdir -p Lambda
+              ls -al
+              cd Lambda
+              cp ~/repo/index.js .
+              ls -al
+              cp ~/repo/package.json .
+              cp -r ~/repo/node_modules .
+              ls -al
+              zip -r Lambda-code-csye6225-${CIRCLE_BUILD_NUM}.zip .
+              ls -al
+              shopt -s extglob
+              rm -r !(*.zip)
+              pwd
+              ls -al
+              cd ..
+              ls -al
+              pwd
+        - run:
+            name: Upload Artifact to S3
+            command: |
+              ls -al
+              aws s3 cp --recursive Lambda s3://${Lambda_Bucket}
+        - run:
+            name: Make lambda API call
+            command: |
+              aws lambda update-function-code --function-name ${LambdaFunc} --s3-bucket ${Lambda_Bucket} --s3-key Lambda-code-csye6225-${CIRCLE_BUILD_NUM}.zip --region ${REGION}

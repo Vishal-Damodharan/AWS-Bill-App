@@ -1,0 +1,129 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS Cloud Formation to build and deploy an application in a auto scaling Instances",
+    "Parameters": {
+        "zipFile": {
+            "Type": "String",
+            "Description": "Zip File"
+        },
+        "email": {
+            "Type": "String",
+            "Description": "Request email address"
+        },
+        "S3Object": {
+            "Type": "String",
+            "Description": "Request email address"
+        },
+        "arnRole": {
+            "Type": "String",
+            "Description": "Request email address"
+        },
+        "LambdaBucket": {
+            "Type": "String",
+            "Description": "Lambda Bucket"
+        }
+    },
+    "Resources": {
+        "DynamoTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+                "AttributeDefinitions": [
+                    {
+                        "AttributeName": "email_address",
+                        "AttributeType": "S"
+                    }
+                ],
+                "KeySchema": [
+                    {
+                        "AttributeName": "email_address",
+                        "KeyType": "HASH"
+                    }
+                ],
+                "ProvisionedThroughput": {
+                    "ReadCapacityUnits": 20,
+                    "WriteCapacityUnits": 20
+                },
+                "TimeToLiveSpecification": {
+                    "AttributeName": "TTL",
+                    "Enabled": "TRUE"
+                },
+                "TableName": "csye6225"
+            }
+        },
+        "SNS": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "TopicName": "SNSLambda",
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Fn::GetAtt": [
+                                "lambdafunction",
+                                "Arn"
+                            ]
+                        },
+                        "Protocol": "lambda"
+                    }
+                ]
+            }
+        },
+        "SQS": {
+            "Type": "AWS::SQS::Queue",
+            "Properties": {
+                "QueueName": "SQSQueue",
+                "Tags": [
+                    {
+                        "Key": "StackName",
+                        "Value": "CSYE6225"
+                    }
+                ]
+            }
+        },
+        "lambdaPermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:*",
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "lambdafunction",
+                        "Arn"
+                    ]
+                },
+                "Principal": "sns.amazonaws.com",
+                "SourceArn": {
+                    "Ref": "SNS"
+                }
+            }
+        },
+        "lambdafunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "FunctionName": "SNSEmailLambda",
+                "Environment": {
+                    "Variables": {
+                        "fromaddr": {
+                            "Ref": "email"
+                        },
+                        "TTL_DELAY": "60"
+                    }
+                },
+                "MemorySize": 512,
+                "Role": {
+                    "Ref": "arnRole"
+                },
+                "Code": {
+                    "S3Bucket" : {
+                        "Ref": "LambdaBucket"
+                    },
+                    "S3Key" : {
+                        "Ref": "S3Object"
+                    }
+                },
+                "Timeout": 90,
+                "Handler": "index.handler",
+                "Runtime": "nodejs12.x"
+            }
+        }
+    },
+    "Outputs": {}
+}
